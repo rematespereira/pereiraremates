@@ -1,0 +1,12 @@
+{
+  "name": "pereira-remates",
+  "version": "1.0.0",
+  "description": "Pereira Remates Judiciales",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
