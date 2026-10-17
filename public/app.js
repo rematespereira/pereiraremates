@@ -1193,7 +1193,7 @@ function bindPostulacionForm(vehiculoTitulo, vehiculoNum) {
 
     const el = document.getElementById('res-postulacion');
     el.className = 'msg ok';
-    el.innerHTML = '<b>¡Postulación recibida con éxito!</b> Sus datos han sido registrados en el Panel de Administración.<br><a href="admin.html" target="_blank" style="color:#0b3c6d;font-weight:700;text-decoration:underline">Ver en Panel de Administración →</a>';
+    el.innerHTML = '<b>¡Postulación recibida con éxito!</b> Su solicitud ha sido radicada correctamente en el sistema. Un asesor oficial se comunicará con usted en breve para validar sus datos y continuar con el proceso.';
     formEl.reset();
 
     if (btnSubmit) { btnSubmit.disabled = false; btnSubmit.textContent = 'Postularme en la Web'; }
