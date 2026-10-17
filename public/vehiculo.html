@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Ficha del Remate | Pereira Remates Judiciales</title>
+  <meta name="description" content="Información técnica, peritaje certificado, documentación y galería fotográfica de vehículos en remate judicial en Pereira, Risaralda.">
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .remate-header-row { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0; }
+    .remate-title-num { font-size: 1.4rem; font-weight: 800; color: #0b3c6d; margin: 0; }
+    .remate-city-subtitle { font-size: 0.85rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-top: 4px; }
+    .remate-date-pub { font-size: 0.82rem; color: #64748b; font-weight: 500; }
+
+    .photo-stage-container { position: relative; width: 100%; height: 440px; background: #0f172a center/contain no-repeat; border-radius: 6px; overflow: hidden; border: 1px solid #cbd5e1; }
+    .photo-arrow { position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; background: rgba(0,0,0,0.65); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; user-select: none; transition: background 0.2s; z-index: 5; }
+    .photo-arrow:hover { background: rgba(0,0,0,0.9); }
+    .photo-arrow.prev { left: 14px; }
+    .photo-arrow.next { right: 14px; }
+    .photo-count-badge { position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,0.8); color: #fff; font-size: 0.78rem; font-weight: 700; padding: 4px 10px; border-radius: 14px; z-index: 5; }
+
+    .thumb-strip { display: flex; gap: 8px; overflow-x: auto; margin-top: 10px; padding-bottom: 6px; }
+    .thumb-item { width: 75px; height: 55px; background: #0f172a center/cover no-repeat; border-radius: 4px; cursor: pointer; border: 2px solid transparent; flex-shrink: 0; opacity: 0.75; transition: opacity 0.2s, border-color 0.2s; }
+    .thumb-item.active, .thumb-item:hover { opacity: 1; border-color: var(--verde); }
+
+    .info-box-top { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; }
+    .info-box-top .disp-label { font-size: 0.8rem; font-weight: 700; color: #166534; letter-spacing: 0.5px; text-transform: uppercase; }
+    .info-box-top .disp-badge { background: #00ca73; color: #ffffff; font-weight: 700; font-size: 0.85rem; padding: 8px 16px; border-radius: 6px; display: flex; align-items: center; gap: 6px; }
+    .info-box-top .val-label { font-size: 0.88rem; color: #64748b; margin-bottom: 2px; }
+    .info-box-top .val-price { font-size: 1.6rem; font-weight: 800; color: #0f172a; }
+
+    .desc-section { margin-top: 36px; padding-top: 24px; border-top: 1px solid #e2e8f0; }
+    .desc-section h2 { font-size: 1.4rem; color: #0b3c6d; font-weight: 800; margin-bottom: 16px; }
+    .desc-content { font-family: system-ui, -apple-system, sans-serif; font-size: 0.95rem; line-height: 1.7; color: #334155; white-space: pre-line; }
+    .tag-pill { display: inline-block; background: #e2e8f0; color: #334155; font-size: 0.82rem; font-weight: 600; padding: 6px 14px; border-radius: 4px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div id="h"></div>
+
+  <div class="wrap" id="c" style="max-width:1100px">
+    <p style="text-align:center;padding:40px;color:#64748b">Cargando información del remate...</p>
+  </div>
+
+  <div id="ft"></div>
+
+  <script src="app.js"></script>
+  <script>
+    document.getElementById('h').innerHTML = header();
+    document.getElementById('ft').innerHTML = footer();
+
+    const id = new URLSearchParams(location.search).get('id') || 'spark-gt-2011';
+
+    let currentPhotoIndex = 0;
+    let currentPhotos = [];
+
+    function renderVehicleDetail(v) {
+      currentPhotos = v.fotos && v.fotos.length ? v.fotos : [];
+      const numFotos = currentPhotos.length;
+      const mainPhotoUrl = currentPhotos[0] || '';
+
+      // Actualizar Título SEO dinámico
+      const mod = v.especificaciones && v.especificaciones.modelo ? ' ' + v.especificaciones.modelo : '';
+      document.title = `${v.titulo}${mod} | Remate Judicial Pereira`;
+
+      // Pre-cargar imágenes para visualización instantánea
+      currentPhotos.forEach(src => { const img = new Image(); img.src = src; });
+
+      let photoStageHTML = '';
+      if (numFotos > 0) {
+        photoStageHTML = `
+          <div class="photo-stage-container" id="photoStage" style="background-image:url('${mainPhotoUrl}')">
+            ${numFotos > 1 ? `<div class="photo-arrow prev" onclick="changePhoto(-1)">❮</div><div class="photo-arrow next" onclick="changePhoto(1)">❯</div>` : ''}
+            <div class="photo-count-badge" id="photoBadge">1 / ${numFotos} Fotos</div>
+          </div>
+          <div class="thumb-strip" id="thumbStrip">
+            ${currentPhotos.map((f, i) => `<div class="thumb-item ${i===0?'active':''}" onclick="setPhoto(${i})" style="background-image:url('${f}')"></div>`).join('')}
+          </div>
+        `;
+      } else {
+        photoStageHTML = `
+          <div class="photo-stage-container" style="display:flex;align-items:center;justify-content:center;color:#64748b;font-weight:600">
+            📷 No hay imágenes publicadas para este remate
+          </div>
+        `;
+      }
+
+      const specs = v.especificaciones || {};
+      const docList = (v.documentacion || []).map(d => `- ${d}`).join('\n');
+
+      const descText = `${v.descripcion ? `${v.descripcion}\n\n` : ''}*_SUPER OFERTA DE REMATE_*
+
+Marca: ${specs.marca || v.titulo}
+Linea: ${specs.linea || ''}
+Version: ${specs.version || 'FULL EQUIPO'}
+Modelo: ${specs.modelo || ''}
+Color: ${specs.color || ''}
+Transmisión: ${specs.transmision || 'MECÁNICA'}
+Motor: ${specs.motor || ''}
+TRACCIÓN: ${specs.traccion || '4X2'}
+Combustible: ${specs.combustible || ''}
+Uso: ${specs.uso || '113.366 KILÓMETROS'}
+${specs.llaves || '2 LLAVES 🔑🔑 ORIGINALES'}
+
+*DOCUMENTACIÓN:*
+
+${docList}
+
+Valor remate: ${money(v.precio)}`;
+
+      document.getElementById('c').innerHTML = `
+        <div style="margin-bottom:14px">
+          <a href="index.html" style="color:#0284c7;text-decoration:none;font-weight:600">← Volver a la lista de bienes</a>
+        </div>
+
+        <div class="remate-header-row">
+          <div>
+            <div class="remate-title-num">Número del Remate: ${v.numRemate || '246787937353522'}</div>
+            <div class="remate-city-subtitle">${v.ciudad || 'PEREIRA'}</div>
+          </div>
+          <div class="remate-date-pub">
+            Fecha de publicación del aviso del remate: <b>${v.fechaPublicacion || '05/09/2026'}</b>
+          </div>
+        </div>
+
+        <div class="two" style="grid-template-columns: 1.15fr 0.85fr; gap: 28px; align-items: start;">
+          <div>
+            ${photoStageHTML}
+          </div>
+
+          <div>
+            <div class="info-box-top">
+              <div>
+                <div class="disp-label">DISPONIBILIDAD</div>
+              </div>
+              <div>
+                <div class="disp-badge">✓ Entrega inmediata</div>
+              </div>
+              <div style="width:100%;margin-top:10px;padding-top:10px;border-top:1px solid #f1f5f9">
+                <div class="val-label">Valor del bien:</div>
+                <div class="val-price">${money(v.precio)}</div>
+              </div>
+            </div>
+
+            ${formPostulacionHTML(v.titulo, v.numRemate)}
+          </div>
+        </div>
+
+        <div class="desc-section">
+          <h2>Descripción del Remate</h2>
+          <div class="desc-content">${descText}</div>
+          <div><span class="tag-pill">${v.tipo || 'Vehiculo'}</span></div>
+        </div>
+      `;
+
+      bindPostulacionForm(v.titulo, v.numRemate);
+    }
+
+    const localVehicle = typeof INITIAL_VEHICLES !== 'undefined' ? INITIAL_VEHICLES.find(x => x.id === id) : null;
+    if (localVehicle) {
+      renderVehicleDetail(localVehicle);
+    }
+
+    fetch('/api/vehicles/' + id)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(v => {
+        if (v) renderVehicleDetail(v);
+      })
+      .catch(() => {
+        if (!localVehicle) {
+          document.getElementById('c').innerHTML = `<p style="text-align:center;padding:40px;color:#e11d48">No se encontró información del remate solicitado.</p>`;
+        }
+      });
+
+    function setPhoto(idx) {
+      if (!currentPhotos[idx]) return;
+      currentPhotoIndex = idx;
+      const stage = document.getElementById('photoStage');
+      if (stage) stage.style.backgroundImage = `url('${currentPhotos[idx]}')`;
+      const badge = document.getElementById('photoBadge');
+      if (badge) badge.textContent = `${idx + 1} / ${currentPhotos.length} Fotos`;
+      document.querySelectorAll('.thumb-item').forEach((el, i) => {
+        const isActive = (i === idx);
+        el.classList.toggle('active', isActive);
+        if (isActive) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+      });
+    }
+
+    function changePhoto(dir) {
+      if (!currentPhotos.length) return;
+      let nextIdx = (currentPhotoIndex + dir + currentPhotos.length) % currentPhotos.length;
+      setPhoto(nextIdx);
+    }
+
+    // Navegación con teclado (flechas izquierda / derecha)
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') changePhoto(-1);
+      if (e.key === 'ArrowRight') changePhoto(1);
+    });
+  </script>
+</body>
+</html>

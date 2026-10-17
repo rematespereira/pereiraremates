@@ -1,0 +1,28 @@
+# Robots.txt - Pereira Remates Judiciales
+User-agent: *
+Allow: /
+Allow: /index.html
+Allow: /vehiculo.html*
+Allow: /public/
+Allow: /img/
+Allow: /style.css
+Allow: /app.js
+Allow: /colombia.js
+
+# Proteger áreas administrativas y APIs privadas
+Disallow: /admin.html
+Disallow: /api/admin/
+
+# Motores principales
+User-agent: Googlebot
+Allow: /
+Disallow: /admin.html
+Disallow: /api/admin/
+
+User-agent: Bingbot
+Allow: /
+Disallow: /admin.html
+Disallow: /api/admin/
+
+# Mapa del sitio para indexación rápida
+Sitemap: https://pereirarematesjudiciales.com/sitemap.xml

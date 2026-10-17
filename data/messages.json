@@ -1,0 +1,20 @@
+[
+   {
+      "mensaje" : "Test message from curl",
+      "num_doc" : "",
+      "id" : "1792200998-6421",
+      "vehiculo" : "RENAULT SANDERO 2013 (Color Rojo)",
+      "nombre" : "Prueba Verificacion",
+      "tipo" : "Postulación al Remate",
+      "correo" : "prueba@remates.com",
+      "oferta" : "",
+      "acepta" : 1,
+      "tipo_doc" : "Cédula de Ciudadanía",
+      "telefono" : "3170580966",
+      "fecha" : "Sat Oct 17 01:36:38 2026",
+      "direccion" : "",
+      "leido" : 0,
+      "ciudad" : "Pereira",
+      "apellidos" : ""
+   }
+]

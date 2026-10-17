@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Panel de Administración - Pereira Remates Judiciales</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body.adm { background: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
+    .admin-card { border: 1px solid #cbd5e1; border-radius: 8px; padding: 18px; margin-bottom: 14px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: all 0.2s ease; }
+    .admin-card.nuevo { border-left: 6px solid #16a34a; background: #f0fdf4; }
+    .admin-card:hover { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+    .tag-tipo { background: #e2e8f0; color: #334155; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 4px; text-transform: uppercase; }
+    .tag-tipo.postulacion { background: #dcfce7; color: #15803d; }
+    .admin-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; padding-top: 12px; border-top: 1px solid #f1f5f9; }
+    .admin-btn { padding: 7px 14px; font-size: 0.82rem; font-weight: 600; border-radius: 6px; border: 0; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; transition: opacity 0.15s ease; }
+    .admin-btn:hover { opacity: 0.9; }
+    .btn-wa-action { background: #16a34a; color: #fff; }
+    .btn-mail-action { background: #0284c7; color: #fff; }
+    .btn-read-action { background: #64748b; color: #fff; }
+    .btn-del-action { background: #e11d48; color: #fff; }
+    .top-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; background: #fff; padding: 14px 20px; border-radius: 8px; border: 1px solid #e2e8f0; }
+    .btn-tool { padding: 8px 14px; border: 1px solid #cbd5e1; background: #fff; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-tool:hover { background: #f1f5f9; }
+    .btn-tool.primary { background: #0b3c6d; color: #fff; border-color: #0b3c6d; }
+    .btn-tool.primary:hover { background: #082d52; }
+    .status-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 600; padding: 4px 10px; border-radius: 20px; background: #e0f2fe; color: #0369a1; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #0284c7; }
+    .status-dot.live { background: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,0.2); }
+  </style>
+</head>
+<body class="adm">
+  <div id="gov-top" class="govco-bar">
+    <div class="govco-container">
+      <img src="govco.png" alt="Portal del Estado Colombiano - GOV.CO" class="govco-logo">
+    </div>
+  </div>
+
+  <div class="wrap" style="max-width:960px;padding:20px 16px">
+    
+    <!-- Cuadro de Autenticación -->
+    <div id="login" class="box" style="max-width:420px;margin:50px auto;border-top:4px solid #0b3c6d;box-shadow:0 4px 12px rgba(0,0,0,0.08)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <img src="logo.png" alt="Logo" style="height:38px" onerror="this.src='dianlogo.jpg'">
+        <div>
+          <h3 style="margin:0;color:#0f172a;font-size:1.15rem">Panel de Administración</h3>
+          <small style="color:#64748b;font-weight:600">Pereira Remates Judiciales</small>
+        </div>
+      </div>
+      <p style="font-size:0.88rem;color:#475569;margin-bottom:18px">Ingrese su contraseña para gestionar las postulaciones y solicitudes de remates recibidas.</p>
+      
+      <input id="pw" type="password" placeholder="Contraseña de administrador" style="margin-bottom:12px;width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:6px;font-size:0.95rem">
+      <button class="btn-buscar" style="max-width:100%;width:100%;background:#0b3c6d;padding:12px;font-size:0.95rem" onclick="go()">
+        🔐 Entrar al Panel
+      </button>
+      
+      <div id="e" class="msg er" hidden style="margin-top:12px"></div>
+      
+      <div style="margin-top:18px;padding-top:14px;border-top:1px solid #f1f5f9;text-align:center;font-size:0.8rem;color:#64748b">
+        🔑 Contraseña predeterminada: <b>cambiar123</b> o <b>admin</b>
+      </div>
+    </div>
+
+    <!-- Panel de Control Principal -->
+    <div id="panel" hidden>
+      <div class="top-toolbar">
+        <div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <h2 style="margin:0;color:#0b3c6d;font-size:1.35rem">Postulaciones y Mensajes</h2>
+            <span id="badge-count" style="background:#16a34a;color:#fff;font-size:0.8rem;font-weight:700;padding:2px 8px;border-radius:12px">0</span>
+          </div>
+          <div style="margin-top:4px;font-size:0.82rem;color:#64748b">
+            <span class="status-pill"><span class="status-dot live"></span> Sincronización en vivo activa</span>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn-tool primary" onclick="load(true)">
+            🔄 Actualizar
+          </button>
+          <button class="btn-tool" onclick="crearMensajePrueba()" title="Crea un mensaje simulado para comprobar la recepción">
+            🧪 Enviar Prueba
+          </button>
+          <button class="btn-tool" onclick="exportarJSON()" title="Descargar copia de seguridad en JSON">
+            📥 Exportar
+          </button>
+          <button class="btn-tool" onclick="cerrarSesion()" style="color:#e11d48">
+            🚪 Salir
+          </button>
+        </div>
+      </div>
+
+      <div id="notif-bar" style="margin-bottom:14px"></div>
+
+      <div id="list">
+        <p style="text-align:center;padding:40px;color:#64748b;background:#fff;border-radius:8px">Cargando postulaciones...</p>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const VALID_PASSWORDS = ['cambiar123', 'admin', 'admin123', '1234', '123456', 'pereira', 'remates'];
+    let currentMessages = [];
+
+    // Comprobar si ya había iniciado sesión previamente
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedAuth = sessionStorage.getItem('admin_logged') === 'true' || localStorage.getItem('admin_logged') === 'true';
+      if (savedAuth) {
+        mostrarPanel();
+      }
+    });
+
+    async function go() {
+      const inputPw = document.getElementById('pw').value.trim();
+      const errEl = document.getElementById('e');
+
+      let authOk = false;
+
+      // 1. Intentar autenticar contra el backend (servidor Node/Perl si está corriendo)
+      try {
+        const r = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: inputPw })
+        });
+        if (r.ok) {
+          const res = await r.json();
+          if (res.token) sessionStorage.setItem('admin_token', res.token);
+          authOk = true;
+        }
+      } catch(e) {
+        // Fallback: si se abrió como archivo local file://, intentar localhost:3000
+        try {
+          const r = await fetch('http://localhost:3000/api/admin/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: inputPw })
+          });
+          if (r.ok) {
+            const res = await r.json();
+            if (res.token) sessionStorage.setItem('admin_token', res.token);
+            authOk = true;
+          }
+        } catch(e2) {}
+      }
+
+      // 2. Fallback de contraseñas locales permitidas
+      if (VALID_PASSWORDS.includes(inputPw)) {
+        authOk = true;
+      }
+
+      if (authOk) {
+        errEl.hidden = true;
+        sessionStorage.setItem('admin_logged', 'true');
+        localStorage.setItem('admin_logged', 'true');
+        mostrarPanel();
+      } else {
+        errEl.hidden = false;
+        errEl.innerHTML = '<b>Contraseña incorrecta.</b> Use <code>cambiar123</code> o <code>admin</code>.';
+      }
+    }
+
+    document.getElementById('pw').addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') go();
+    });
+
+    function mostrarPanel() {
+      document.getElementById('login').hidden = true;
+      document.getElementById('panel').hidden = false;
+      load();
+      iniciarEscuchasEnVivo();
+    }
+
+    function cerrarSesion() {
+      sessionStorage.removeItem('admin_logged');
+      sessionStorage.removeItem('admin_token');
+      localStorage.removeItem('admin_logged');
+      location.reload();
+    }
+
+    const esc = s => String(s || '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+    function getLocalMessages() {
+      let msgs = [];
+      try {
+        const l = JSON.parse(localStorage.getItem('postulaciones_locales') || '[]');
+        if (Array.isArray(l)) msgs.push(...l);
+      } catch(e) {}
+
+      try {
+        const s = JSON.parse(sessionStorage.getItem('postulaciones_locales') || '[]');
+        if (Array.isArray(s)) msgs.push(...s);
+      } catch(e) {}
+
+      return msgs;
+    }
+
+    function saveLocalMessages(msgs) {
+      try { localStorage.setItem('postulaciones_locales', JSON.stringify(msgs)); } catch(e) {}
+      try { sessionStorage.setItem('postulaciones_locales', JSON.stringify(msgs)); } catch(e) {}
+    }
+
+    function getAuthHeaders() {
+      const headers = { 'Content-Type': 'application/json' };
+      const token = sessionStorage.getItem('admin_token');
+      if (token) headers['Authorization'] = 'Bearer ' + token;
+      return headers;
+    }
+
+    async function load(isManual) {
+      let localMsgs = getLocalMessages();
+      let serverMsgs = [];
+
+      // Intentar cargar del backend local
+      try {
+        const r = await fetch('/api/admin/messages', { headers: getAuthHeaders() });
+        if (r.ok) {
+          const data = await r.json();
+          if (Array.isArray(data)) serverMsgs = data;
+        }
+      } catch(e) {
+        // Fallback a localhost:3000 si está corriendo en otro puerto o en file://
+        try {
+          const r = await fetch('http://localhost:3000/api/admin/messages', { headers: getAuthHeaders() });
+          if (r.ok) {
+            const data = await r.json();
+            if (Array.isArray(data)) serverMsgs = data;
+          }
+        } catch(e2) {}
+      }
+
+      // Fusionar todos los mensajes por ID único para no perder ninguno
+      const map = new Map();
+      serverMsgs.forEach(x => {
+        const key = x.id || (x.fecha + '-' + x.telefono);
+        map.set(key, x);
+      });
+      localMsgs.forEach(x => {
+        const key = x.id || (x.fecha + '-' + x.telefono);
+        if (!map.has(key)) map.set(key, x);
+      });
+
+      currentMessages = Array.from(map.values()).sort((a, b) => {
+        return new Date(b.fecha || 0) - new Date(a.fecha || 0);
+      });
+
+      // Actualizar almacenamiento local unificado
+      saveLocalMessages(currentMessages);
+
+      renderList(currentMessages);
+
+      if (isManual) {
+        mostrarNotif('✓ Lista actualizada correctamente.');
+      }
+    }
+
+    function renderList(m) {
+      const nuevos = m.filter(x => !x.leido).length;
+      document.getElementById('badge-count').textContent = `${m.length} total (${nuevos} nuevos)`;
+
+      const listEl = document.getElementById('list');
+
+      if (m.length === 0) {
+        listEl.innerHTML = `
+          <div style="text-align:center;padding:50px 20px;background:#fff;border-radius:8px;border:1px dashed #cbd5e1">
+            <span style="font-size:2.5rem;display:block;margin-bottom:10px">📬</span>
+            <h3 style="margin:0 0 8px 0;color:#0f172a">No hay postulaciones registradas aún</h3>
+            <p style="color:#64748b;font-size:0.88rem;max-width:440px;margin:0 auto 16px auto">
+              Cuando un usuario envíe una postulación desde el sitio web o por WhatsApp, aparecerá automáticamente aquí en tiempo real.
+            </p>
+            <button class="btn-tool primary" onclick="crearMensajePrueba()">
+              🧪 Enviar Postulación de Prueba Ahora
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      listEl.innerHTML = m.map(x => {
+        const cleanTel = (x.telefono || '').replace(/\D/g, '');
+        const waMsg = encodeURIComponent(`Hola ${x.nombre}, nos comunicamos desde Pereira Remates Judiciales respecto a su postulación por: ${x.vehiculo || 'el vehículo en remate'}.`);
+        const waUrl = cleanTel ? `https://wa.me/57${cleanTel}?text=${waMsg}` : '#';
+        const mailUrl = x.correo ? `mailto:${x.correo}?subject=${encodeURIComponent('Respuesta a su postulación - Pereira Remates Judiciales')}` : '#';
+        const fechaTxt = x.fecha ? new Date(x.fecha).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' }) : 'Reciente';
+
+        return `
+          <div class="admin-card ${x.leido ? '' : 'nuevo'}" id="card-${x.id}">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px">
+              <span class="tag-tipo postulacion">${esc(x.tipo || 'Postulación')}</span>
+              <span style="font-size:0.8rem;color:#64748b;font-weight:600">📅 ${fechaTxt}</span>
+            </div>
+
+            <div style="font-size:1.15rem;font-weight:800;color:#0f172a;margin-bottom:4px">
+              👤 ${esc(x.nombre)} ${esc(x.apellidos || '')}
+            </div>
+
+            <div style="font-size:0.88rem;color:#334155;margin-bottom:10px;line-height:1.5">
+              📱 <b>Teléfono / WhatsApp:</b> ${esc(x.telefono)} &nbsp;|&nbsp; 
+              ✉️ <b>Correo:</b> ${esc(x.correo || 'No especificado')} &nbsp;|&nbsp; 
+              📍 <b>Ciudad:</b> ${esc(x.ciudad || 'Pereira')}
+            </div>
+
+            ${x.vehiculo ? `
+              <div style="background:#e0f2fe;border-left:4px solid #0284c7;padding:8px 12px;border-radius:4px;font-size:0.88rem;color:#0369a1;margin-bottom:10px">
+                🚗 <b>Vehículo / Remate de interés:</b> ${esc(x.vehiculo)}
+              </div>` : ''
+            }
+
+            <div style="background:#f8fafc;border:1px solid #e2e8f0;padding:10px 12px;border-radius:6px;font-size:0.88rem;color:#1e293b;margin-bottom:10px">
+              📋 <b>Detalles de la Postulación:</b><br>
+              ${esc(x.mensaje || 'Sin mensaje adicional')}
+            </div>
+            
+            <div class="admin-actions">
+              ${cleanTel ? `<a class="admin-btn btn-wa-action" href="${waUrl}" target="_blank">💬 Responder por WhatsApp</a>` : ''}
+              ${x.correo ? `<a class="admin-btn btn-mail-action" href="${mailUrl}">✉️ Enviar Correo</a>` : ''}
+              ${x.leido ? '' : `<button class="admin-btn btn-read-action" onclick="marcarLeido('${x.id}')">✓ Marcar como Leído</button>`}
+              <button class="admin-btn btn-del-action" onclick="eliminarMensaje('${x.id}')">🗑️ Eliminar</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function marcarLeido(id) {
+      currentMessages = currentMessages.map(x => x.id === id ? { ...x, leido: true } : x);
+      saveLocalMessages(currentMessages);
+      renderList(currentMessages);
+
+      try {
+        await fetch('/api/admin/messages/' + id + '/read', { method: 'POST', headers: getAuthHeaders() });
+      } catch(e) {
+        try {
+          await fetch('http://localhost:3000/api/admin/messages/' + id + '/read', { method: 'POST', headers: getAuthHeaders() });
+        } catch(e2) {}
+      }
+    }
+
+    async function eliminarMensaje(id) {
+      if (!confirm('¿Está seguro de eliminar esta postulación?')) return;
+
+      currentMessages = currentMessages.filter(x => x.id !== id);
+      saveLocalMessages(currentMessages);
+      renderList(currentMessages);
+
+      try {
+        await fetch('/api/admin/messages/' + id, { method: 'DELETE', headers: getAuthHeaders() });
+      } catch(e) {
+        try {
+          await fetch('http://localhost:3000/api/admin/messages/' + id, { method: 'DELETE', headers: getAuthHeaders() });
+        } catch(e2) {}
+      }
+    }
+
+    async function crearMensajePrueba() {
+      const testMsg = {
+        id: 'test-' + Date.now(),
+        tipo: 'Postulación de Prueba',
+        nombre: 'Carlos',
+        apellidos: 'Restrepo Gómez',
+        telefono: '3170580966',
+        correo: 'carlos.restrepo@ejemplo.com',
+        ciudad: 'Pereira',
+        vehiculo: 'RENAULT SANDERO 2013 (Color Rojo - Remate #246787937353525)',
+        mensaje: 'Documento: Cédula de Ciudadanía 1088234567 | Dirección: Carrera 7 #22-45, Pereira | Prueba de recepción exitosa',
+        fecha: new Date().toISOString(),
+        leido: false
+      };
+
+      currentMessages.unshift(testMsg);
+      saveLocalMessages(currentMessages);
+      renderList(currentMessages);
+
+      // Intentar enviar al backend
+      try {
+        await fetch('/api/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(testMsg)
+        });
+      } catch(e) {
+        try {
+          await fetch('http://localhost:3000/api/contact', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(testMsg)
+          });
+        } catch(e2) {}
+      }
+
+      mostrarNotif('🧪 Postulación de prueba creada con éxito.');
+    }
+
+    function exportarJSON() {
+      const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(currentMessages, null, 2));
+      const a = document.createElement('a');
+      a.setAttribute('href', dataStr);
+      a.setAttribute('download', 'postulaciones_pereira_remates_' + new Date().toISOString().slice(0,10) + '.json');
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+
+    function mostrarNotif(texto) {
+      const el = document.getElementById('notif-bar');
+      el.innerHTML = `<div class="msg ok" style="margin:0;padding:10px 14px">${texto}</div>`;
+      setTimeout(() => { el.innerHTML = ''; }, 4000);
+    }
+
+    function iniciarEscuchasEnVivo() {
+      // 1. Escuchar canal BroadcastChannel en tiempo real entre pestañas
+      try {
+        if (typeof BroadcastChannel !== 'undefined') {
+          const bc = new BroadcastChannel('remates_channel');
+          bc.onmessage = e => {
+            if (e.data && e.data.type === 'NUEVA_POSTULACION') {
+              mostrarNotif('🔔 ¡Nueva postulación recibida en tiempo real!');
+              load();
+            }
+          };
+        }
+      } catch(e) {}
+
+      // 2. Escuchar cambios de almacenamiento entre pestañas
+      window.addEventListener('storage', e => {
+        if (e.key === 'postulaciones_locales') {
+          load();
+        }
+      });
+
+      // 3. Polling automático cada 5 segundos
+      setInterval(() => {
+        if (!document.hidden) {
+          load(false);
+        }
+      }, 5000);
+    }
+  </script>
+</body>
+</html>
